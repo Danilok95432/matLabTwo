@@ -97,18 +97,3 @@ export function solveTransportProblem(problem: TransportProblem): Solution {
 
     return { allocation, totalCost };
 }
-
-// Пример использования
-const problem: TransportProblem = {
-    supply: [20, 30, 50],
-    demand: [30, 30, 40],
-    costs: [
-        [8, 6, 10],
-        [9, 4, 8],
-        [3, 6, 7],
-    ],
-};
-
-const solution = solveTransportProblem(problem);
-console.log("Распределение:", solution.allocation);
-console.log("Общая стоимость:", solution.totalCost);
