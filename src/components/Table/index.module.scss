@@ -1,0 +1,24 @@
+.tableForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  button {
+    width: 250px;
+    margin: auto;
+    padding: 15px 10px;
+    background-color: #000000;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease-in;
+    &:hover {
+      background-color: #f6f1e9;
+      color: #000;
+      box-shadow: rgba(0, 0, 0, 0.1) 25px 20px 25px -5px;
+    }
+  }
+}

@@ -54,7 +54,6 @@ export function solveTransportProblem(problem: TransportProblem): Solution {
                 }
             }
         }
-        console.log(1)
     }
 
     // Оптимизация
@@ -87,13 +86,56 @@ export function solveTransportProblem(problem: TransportProblem): Solution {
 
         // Если есть незанятые клетки, обновляем решение
         if (!optimal) {
-            // Алгоритм для обновления распределения
-            // (дополните его по мере необходимости)
+            // Находим цикл
+            const cycle = findCycle(allocation, marked, numSources, numDestinations);
+            if (cycle) {
+                // Определяем минимальное количество в цикле
+                const minAmount = Math.min(...cycle.map(({ i, j }) => allocation[i][j] || Infinity));
+                // Обновляем распределение
+                for (const { i, j } of cycle) {
+                    allocation[i][j] += (allocation[i][j] ? -minAmount : minAmount);
+                }
+            }
         }
-        console.log(2)
     }
 
-    console.log(3)
-
     return { allocation, totalCost };
+}
+
+// Функция для поиска цикла
+function findCycle(allocation: number[][], marked: boolean[][], numSources: number, numDestinations: number) {
+    const visited: boolean[][] = Array.from({ length: numSources }, () => Array(numDestinations).fill(false));
+    const path: { i: number, j: number }[] = [];
+    
+    const dfs = (i: number, j: number): boolean => {
+        if (visited[i][j]) return false;
+        visited[i][j] = true;
+        path.push({ i, j });
+
+        // Проверка соседей
+        for (let ni = 0; ni < numSources; ni++) {
+            if (marked[ni][j] && (allocation[ni][j] > 0 || path.some(p => p.i === ni && p.j === j))) {
+                if (dfs(ni, j)) return true;
+            }
+        }
+        for (let nj = 0; nj < numDestinations; nj++) {
+            if (marked[i][nj] && (allocation[i][nj] > 0 || path.some(p => p.i === i && p.j === nj))) {
+                if (dfs(i, nj)) return true;
+            }
+        }
+
+        path.pop();
+        return false;
+    };
+
+    for (let i = 0; i < numSources; i++) {
+        for (let j = 0; j < numDestinations; j++) {
+            if (marked[i][j]) {
+                path.length = 0; // Очистка пути
+                if (dfs(i, j)) return path;
+            }
+        }
+    }
+
+    return null;
 }
