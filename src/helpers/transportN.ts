@@ -27,7 +27,6 @@ export class TransportationProblem {
       let minRow = -1;
       let minCol = -1;
 
-      //Find cell with minimum cost among available cells
       for (let i = 0; i < rows; i++) {
         for (let j = 0; j < cols; j++) {
           if (supplyCopy[i] > 0 && demandCopy[j] > 0 && this.costMatrix[i][j] < minCost) {
@@ -39,10 +38,9 @@ export class TransportationProblem {
       }
 
       if (minRow === -1) {
-        break; //Exit if no suitable cell is found
+        break; 
       }
 
-      //Allocate as much as possible to the cell
       const allocation = Math.min(supplyCopy[minRow], demandCopy[minCol]);
       plan[minRow][minCol] = allocation;
       supplyCopy[minRow] -= allocation;
@@ -55,12 +53,11 @@ export class TransportationProblem {
     const n = this.plan.length;
     const m = this.plan[0].length;
 
-    const u = new Array(n).fill(0); // Initialize u to 0
-    const v = new Array(m).fill(0); // Initialize v to 0
+    const u = new Array(n).fill(0);
+    const v = new Array(m).fill(0); 
 
-    u[0] = 0; // Set u[0] to 0 (starting point)
+    u[0] = 0; 
 
-    //Error handling (if calculation fails to converge)
     if (u.some(val => isNaN(val) || !isFinite(val)) || v.some(val => isNaN(val) || !isFinite(val))) {
       throw new Error("Error: Potentials calculation failed to converge.");
     }
@@ -98,9 +95,9 @@ export class TransportationProblem {
       if (nextCell) {
         currentRow = nextCell.row;
         currentCol = nextCell.col;
-      } else if (path.some((cell) => cell.row === row && cell.col === col)) { // Cycle found
+      } else if (path.some((cell) => cell.row === row && cell.col === col)) { 
         return path.slice(path.findIndex((cell) => cell.row === row && cell.col === col));
-      } else { // No cycle found
+      } else { 
         return null;
       }
     }
@@ -112,7 +109,7 @@ export class TransportationProblem {
     for (let i = 0; i < cycle.length; i++) {
       const { row, col } = cycle[i];
       const flow = this.plan[row][col];
-      minFlow = Math.min(minFlow, flow); //Find minimum flow in the cycle
+      minFlow = Math.min(minFlow, flow); 
     }
     return minFlow;
   }
@@ -122,7 +119,7 @@ export class TransportationProblem {
     console.log("Flow: ", flow)
     for (let i = 0; i < cycle.length; i++) {
       const { row, col } = cycle[i];
-      if (i % 2 === 0) { //Even indices: subtract flow
+      if (i % 2 === 0) { 
         this.plan[row][col] -= flow;
       } else { //Odd indices: add flow
         this.plan[row][col] += flow;
@@ -202,7 +199,7 @@ export class TransportationProblem {
       improvement = this.improvePlan();
     }
 
-    // Вычисляем общие затраты и доходы
+    // Вычисляем общие затраты
     let totalCost = 0;
 
     for (let i = 0; i < this.supply.length; i++) {
