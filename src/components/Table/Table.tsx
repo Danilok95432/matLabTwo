@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -39,18 +39,69 @@ export const Table: React.FC<TableProps> = ({ rows, columns }) => {
     handleSubmit,
     formState: { errors },
   } = useForm<TableData>({
-    // Specify type here
     resolver: yupResolver(schema),
     defaultValues: {
       costsMatrix: Array.from({ length: rows - 1 }, () =>
         Array(columns - 1).fill(0)
-      ), // Use 0 instead of ''
-      supply: Array(rows - 1).fill(0), 
+      ),
+      supply: Array(rows - 1).fill(0),
       demand: Array(columns - 1).fill(0),
     },
   });
 
+    const renderCell = useCallback(
+        (fieldName: string, rowIndex: number, colIndex: number) => {
+            return (
+                <Cell key={`${rowIndex}-${colIndex}`}>
+                    <Controller
+                        name={fieldName}
+                        control={control}
+                        render={({ field }) => (
+                            <Input
+                                {...field}
+                                type="number"
+                            />
+                        )}
+                    />
+                </Cell>
+            );
+        },
+        [control]
+    );
+
+
+  const displayErrors = useCallback(() => {
+    const errorMessages = Object.entries(errors)
+      .map(([_, value]) => {
+        if (Array.isArray(value)) {
+            return value.map((rowErrors) => {
+                if (Array.isArray(rowErrors)){
+                 return rowErrors.map(colErrors => colErrors?.message).filter(Boolean).join(', ');
+                }
+               return rowErrors?.message
+              })
+             .filter(Boolean)
+             .join(', ');
+        }
+        return value?.message
+      })
+      .filter(Boolean)
+      .join('\n');
+
+    if (errorMessages) {
+      alert(`Произошли ошибки:\n${errorMessages}`);
+    }
+  }, [errors]);
+
+
   const onSubmit = (data: TableData) => {
+       displayErrors();
+
+        if (Object.keys(errors).length > 0) {
+           return;
+       }
+
+
     const objective: ObjectiveType = "minimize";
     const tp = new TransportationProblem(
       data.costsMatrix,
@@ -65,33 +116,7 @@ export const Table: React.FC<TableProps> = ({ rows, columns }) => {
     }
   };
 
-  const renderCell = (
-    fieldName: string,
-    rowIndex: number,
-    colIndex: number
-  ) => {
-    return (
-      <Cell key={`${rowIndex}-${colIndex}`}>
-        <Controller
-          name={fieldName}
-          control={control}
-          render={({ field }) => (
-            <Input  
-              {...field}
-              type="number" 
-            />
-          )}
-        />
-        {errors[fieldName as keyof TableData]?.[rowIndex]?.[colIndex] && (
-          <span style={{ color: "red" }}>
-            {errors[fieldName as keyof TableData][rowIndex][colIndex]?.message}
-          </span>
-        )}
-      </Cell>
-    );
-  };
 
-  // Генерация таблицы
   return (
     <form className={styles.tableForm} onSubmit={handleSubmit(onSubmit)}>
       <Container>
@@ -121,11 +146,6 @@ export const Table: React.FC<TableProps> = ({ rows, columns }) => {
           <Cell />
         </Row>
       </Container>
-      {Object.entries(errors).map(([key, value]) => (
-        <div key={key} style={{ color: "red" }}>
-          {key}: {value.message}
-        </div>
-      ))}
       <button type="submit">Решить</button>
     </form>
   );
